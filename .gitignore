@@ -1,0 +1,10 @@
+target
+lib
+.settings
+.classpath
+.project
+.vscode
+.classpath
+.project
+
+teste.txt
