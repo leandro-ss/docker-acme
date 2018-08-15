@@ -3,8 +3,6 @@
 DOCKER-ACME
 =================	
 	
-###Build
-
 	Para Build da aplicação execute os seguintes passos:
 	
 		1 - No mesmo nivel de diretório do Dockerfile execute "docker build -t docker-acme ."
