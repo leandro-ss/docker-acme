@@ -1,46 +1,67 @@
-<html ng-app="uploadApp">
+<html ng-app="fileStorageDemo">
+
 <head>
-<meta charset="utf8" />
-<title>Document Upload</title>
-<link rel="stylesheet" href="styles/bootstrap.min.css">
+    <script src="lib/jquery.js"></script>
+    <script src="lib/bootstrap.js"></script>
+    <script src="lib/angular.js"></script>
+    <script src="lib/angular-simple-pagination.js"></script>
+    <script src="fileStorageService.js"></script>
+    <script src="fileStorageController.js"></script>
+
+    <link rel="stylesheet" href="styles/bootstrap.min.css">
 </head>
-<body ng-controller="docController">
-	<div class="container">
-		<div class="col-md-6">
-		<div class="row">
+
+<body ng-controller="fileStorageController">
+    <div class="container">
+
+        <div class="row">
             <h2>Upload Document</h2>
             <table class="table table-bordered">
                 <tr>
-                    <td><input type="file" class="custom-file-input" file-model="file"></td>
-
+                    <td>
+                        <input type="file" class="custom-file-input" file-model="file">
+                    </td>
                 </tr>
                 <tr>
-                    <td><button ng-click="upload()">Upload</button></td>
+                    <td>
+                        <button ng-click="upload()">Upload</button>
+                    </td>
                 </tr>
             </table>
         </div>
-            <div class="row">
-		        <table class="table table-bordered">
-			<thead>
-    			<tr>
-    				<th>File Name</th>
-    				<th>Action</th>
-    			</tr>
-			</thead>
-			<tbody>
-				<tr ng-repeat="doc in docList">
-					<td><a href="/doc/{{doc.id}}">{{doc.docName}}</a></td>
-					<td><a href="/doc/{{doc.id}}" target="_blank">Download</a></td>
-				</tr>
-			</tbody>		
-		</table>
-		</div>
-	</div>
+
+        <div class="row">
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>File</th>
+                        <th>Action_1</th>
+                        <th>Action_2</th>
+                        <th>Action_3</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr ng-repeat="item in items | limitTo:settings.pageLimit:settings.offset">
+                        <td>
+                            <p>{{item.name}}</p>
+                        </td>
+                        <td>
+                            <button ng-href="#">Download</button>
+                        </td>
+                        <td>
+                            <button confirmed-click="delete(item.name);" ng-confirm-click="Would you like to delete this file?">Delete</button>
+                        </td>
+                        <td>
+                            <button rename-click="rename(item.name);" ng-rename-click="Would you like to rename this file?">Rename</button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <simple-pagination current-page="settings.currentPage" page-limit="settings.pageLimit" offset="settings.offset" on-update="callback()"
+                total="settings.total">
+            </simple-pagination>
+        </div>
     </div>
-    <script src="lib/plugin/jquery-2.2.1.min.js"></script>
-	<script src="lib/plugin/bootstrap.min.js"></script>
-	<script src="lib/plugin/angular.min.js"></script>
-	<script src="documentService.js"></script>
-	<script src="app.js"></script>
 </body>
+
 </html>

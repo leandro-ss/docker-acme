@@ -42,4 +42,19 @@ public class ListPagingTO {
 		this.listFileName = listFileName;
 	}
     
+    @Override
+    public boolean equals(Object obj) {
+        Boolean result = Boolean.FALSE;
+
+        if (obj instanceof ListPagingTO){
+            result = ((ListPagingTO)obj).getListFileName().equals(this.listFileName);
+        }
+
+        return result;
+    }
+
+    @Override
+    public String toString() {
+        return this.listFileName != null ? this.listFileName.toString(): null;
+    }
 }

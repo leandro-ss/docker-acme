@@ -18,7 +18,7 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <docker.image.prefix>leandross</docker.image.prefix>
-        <start-class>br.com.spring.ang.Application</start-class>
+        <start-class>br.com.acme.ang.Application</start-class>
         <java.version>1.8</java.version>
     </properties>
 
@@ -48,12 +48,17 @@
     </dependencies>
 
     <build>
-        <finalName>final</finalName>
+        <finalName>docker-acme</finalName>
         <plugins>
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <version>1.5.9.RELEASE</version>
+                <configuration>
+                    <jvmArguments>
+                        -Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=5005
+                    </jvmArguments>
+                </configuration>
             </plugin>
         </plugins>
     </build>

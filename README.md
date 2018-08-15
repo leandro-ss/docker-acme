@@ -11,3 +11,9 @@ https://docs.aws.amazon.com/cli/latest/userguide/cli-environment.html
 https://docs.aws.amazon.com/sdk-for-java/v1/developer-guide/credentials.html
 
 https://www.devglan.com/spring-boot/file-upload-angularjs-spring-boot-rest
+
+https://stackoverflow.com/questions/4165558/best-practices-for-using-markers-in-slf4j-logback
+
+http://jsfiddle.net/JSWorld/Hp4W7/34/
+
+https://medium.com/@OlegVaraksin/magic-parse-service-in-angularjs-1-x-3402a53e23fb

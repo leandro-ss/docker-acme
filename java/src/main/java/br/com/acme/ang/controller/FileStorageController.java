@@ -11,22 +11,26 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import br.com.acme.ang.domain.ListPagingTO;
 import br.com.acme.ang.domain.UploadFileResponseTO;
 import br.com.acme.ang.exceptions.NotValidFileException;
 import br.com.acme.ang.service.IFileStorageService;
 
-@RestController
+@Controller
+@RequestMapping(value = "/file")
 public class FileStorageController {
 
     private static final Logger logger = LoggerFactory.getLogger(FileStorageController.class);
@@ -34,31 +38,52 @@ public class FileStorageController {
     @Autowired
     private IFileStorageService service;
 
-    @RequestMapping("/")
-    public String home() {
-        return "index";
+    @GetMapping
+    public @ResponseBody ListPagingTO listFile (@RequestParam(required=false) String token) {
+
+        ListPagingTO result = service.listPaging(token);
+
+        logger.debug("listFile - result: {}", result);
+
+        return result;
+    }
+
+    @GetMapping("/delete/{fileName}")
+    public @ResponseBody ResponseEntity<?> delete(@PathVariable("fileName") String fileName) {
+
+        String result = service.delete(fileName);
+
+        logger.debug("listFile - result: {}", result);
+
+        return new ResponseEntity<>(result, HttpStatus.ACCEPTED);
+    }
+
+    @GetMapping("/rename")
+    public @ResponseBody ResponseEntity<?> rename(@RequestParam String oldFname, @RequestParam String newFname) {
+
+        String result = service.rename(oldFname, newFname);
+
+        logger.debug("listFile - result: {}", result);
+
+        return new ResponseEntity<>(result, HttpStatus.ACCEPTED);
     }
 
 
-    @PostMapping("/uploadFile")
-    public UploadFileResponseTO uploadFile(@RequestParam("file") MultipartFile file) {
-        String fileName = service.upload(file);
+    @PostMapping("/upload")
+    public @ResponseBody ResponseEntity<?> uploadFile(@RequestParam("file") MultipartFile file) {
+        String result = service.upload(file);
 
-        String fileDownloadUri = ServletUriComponentsBuilder.fromCurrentContextPath()
-                .path("/downloadFile/")
-                .path(fileName)
-                .toUriString();
+        logger.debug("uploadFile - result: {}", result);
 
-        return new UploadFileResponseTO(fileName, fileDownloadUri,
-                file.getContentType(), file.getSize());
+        return new ResponseEntity<>(result, HttpStatus.ACCEPTED);
     }
 
-    @GetMapping("/downloadFile/{fileName:.+}")
+    @GetMapping("/download/{fileName:.+}")
     public ResponseEntity<Resource> downloadFile(@PathVariable String fileName, HttpServletRequest request) {
 
         Resource resource;
 		try {
-            
+
             resource = new UrlResource(service.find(fileName));
             
 		} catch (MalformedURLException e) {

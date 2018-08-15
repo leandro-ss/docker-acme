@@ -10,8 +10,10 @@ public interface IFileStorageService  {
 
     public String find(String fileName);
 
-    public String upload(File file);
-    
+    public String copy(String fileName);
+
+    public String delete(String fileName);
+
     public String upload(MultipartFile file);
 
     public String rename(String oldFName, String newFName);

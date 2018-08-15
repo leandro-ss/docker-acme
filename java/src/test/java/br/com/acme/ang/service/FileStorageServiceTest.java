@@ -1,5 +1,7 @@
 package br.com.acme.ang.service;
 
+import static org.junit.Assert.assertFalse;
+
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -16,6 +18,7 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import br.com.acme.ang.config.AmazonConfigTest;
+import br.com.acme.ang.domain.ListPagingTO;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest( classes = {FileStorageService.class, AmazonConfigTest.class})
@@ -58,19 +61,14 @@ public class FileStorageServiceTest {
     }
 
     @Test
-    @Ignore
-    public void listFile() throws IOException {
-        Integer i = service.list().size();
-
-        logger.debug("test list.size: {}", i);
-    }
-
-
-    @Test
     public void listPagingFile() throws IOException {
-        Integer i = service.listPaging("").getListFileName().size();
+        ListPagingTO to1 = service.listPaging(null);
 
-        logger.debug("test list.size: {}", i);
+        ListPagingTO to2 = service.listPaging(to1.getNextContinuationToken());
+
+        assertFalse(to2.getListFileName().isEmpty());
+
+        logger.debug("test list.size: {}", to2);
     }
 
 }

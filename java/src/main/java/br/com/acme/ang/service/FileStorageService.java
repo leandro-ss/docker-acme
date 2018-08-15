@@ -3,19 +3,14 @@ package br.com.acme.ang.service;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.CopyObjectRequest;
 import com.amazonaws.services.s3.model.DeleteObjectRequest;
 import com.amazonaws.services.s3.model.GetObjectRequest;
-import com.amazonaws.services.s3.model.ListObjectsRequest;
 import com.amazonaws.services.s3.model.ListObjectsV2Request;
 import com.amazonaws.services.s3.model.ListObjectsV2Result;
-import com.amazonaws.services.s3.model.ObjectListing;
 import com.amazonaws.services.s3.model.PutObjectRequest;
-import com.amazonaws.services.s3.model.S3ObjectSummary;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,7 +35,7 @@ public class FileStorageService implements IFileStorageService {
     @Value("${aws.bucketName}")
     private String bucketName;
 
-
+    @Override
     public String find(String fileName) {
         logger.debug("find fileName: {}, bucketName: {}, endpointUrl: {}", fileName, bucketName, endpointUrl);
 
@@ -49,16 +44,7 @@ public class FileStorageService implements IFileStorageService {
         return this.endpointUrl + "/" + this.bucketName + "/" + fileName;
     }
 
-    public String upload(File file) {
-        logger.debug("upload file: {}, bucketName: {}, endpointUrl: {}", file, bucketName, endpointUrl);
-
-        String fileName = this.generateFileName(file);
-
-        this.amazonS3.putObject(new PutObjectRequest(bucketName, fileName, file));
-
-        return this.endpointUrl + "/" + this.bucketName + "/" + fileName;
-    }
-
+    @Override
     public String delete(String fileName) {
         logger.debug("delete fileName: {}, bucketName: {}, endpointUrl: {}", fileName, bucketName, endpointUrl);
 
@@ -67,15 +53,11 @@ public class FileStorageService implements IFileStorageService {
         return this.endpointUrl + "/" + this.bucketName + "/" + fileName;
     }
 
-    public String copy(String oldFName, String newFName) {
-        logger.debug("copy oldFileName: {}, newFileName: {}",oldFName,newFName);
-        logger.debug("copy bucketName: {}",bucketName);
+    @Override
+    public String copy(String filename) {
+        logger.debug("copy oldFileName: {}",filename);
 
-        String b = bucketName;
-
-        this.amazonS3.copyObject( new CopyObjectRequest(b,oldFName,b,newFName));
-
-        return this.endpointUrl + "/" + this.bucketName + "/" + newFName;
+        return this.copy(filename, "copy_"+filename);
     }
 
     public String rename(String oldFileName, String newFileName) {
@@ -86,44 +68,6 @@ public class FileStorageService implements IFileStorageService {
         this.delete(oldFileName);
 
         return this.endpointUrl + "/" + this.bucketName + "/" + newFileName;
-    }
-
-    public String upload(MultipartFile multiFile) {
-
-        File file = new File(multiFile.getOriginalFilename());
-
-        try (FileOutputStream fos = new FileOutputStream(file)){
-
-            fos.write(multiFile.getBytes());
-
-		} catch (IOException e) {
-            
-			throw new NotValidFileException(e);
-		}
-
-        file.delete();
-
-        return upload(file);
-    }
-
-    public List<String> list() {
-
-        ListObjectsRequest listObjectsRequest = new ListObjectsRequest().withBucketName(bucketName);
-
-        List<String> result = new ArrayList<>();
-
-        ObjectListing objects = amazonS3.listObjects(listObjectsRequest);
-
-        for (;;) {
-            List<S3ObjectSummary> summaries = objects.getObjectSummaries();
-            if (summaries.size() < 1) {
-                break;
-            }
-            summaries.forEach(s -> result.add(s.getKey()));
-            objects = amazonS3.listNextBatchOfObjects(objects);
-        }
-
-        return result;
     }
 
     public ListPagingTO listPaging(String token) {
@@ -139,11 +83,40 @@ public class FileStorageService implements IFileStorageService {
 
         ListObjectsV2Result result = amazonS3.listObjectsV2(request);
 
-
         result.getObjectSummaries().forEach(s -> to.getListFileName().add(s.getKey()));
         to.setNextContinuationToken(result.getNextContinuationToken());
 
         return to;
+    }
+
+    public String upload(MultipartFile multiFile) {
+
+        File file = new File(multiFile.getOriginalFilename());
+
+        try (FileOutputStream fos = new FileOutputStream(file)){
+
+            fos.write(multiFile.getBytes());
+
+		} catch (IOException e) {
+            
+			throw new NotValidFileException(e);
+        }
+        
+        String result = upload(file);
+
+        file.delete();
+
+        return result;
+    }
+
+    public String upload(File file) {
+        logger.debug("upload file: {}, bucketName: {}, endpointUrl: {}", file, bucketName, endpointUrl);
+
+        String fileName = this.generateFileName(file);
+
+        this.amazonS3.putObject(new PutObjectRequest(bucketName, fileName, file));
+
+        return this.endpointUrl + "/" + this.bucketName + "/" + fileName;
     }
 
     private String generateFileName(File file) {
@@ -152,5 +125,16 @@ public class FileStorageService implements IFileStorageService {
         logger.debug("generateFileName return: {}", result);
 
         return result;
+    }
+
+    private String copy(String oldFName, String newFName) {
+        logger.debug("copy oldFileName: {}, newFileName: {}",oldFName,newFName);
+        logger.debug("copy bucketName: {}",bucketName);
+
+        String b = bucketName;
+
+        this.amazonS3.copyObject( new CopyObjectRequest(b,oldFName,b,newFName));
+
+        return this.endpointUrl + "/" + this.bucketName + "/" + newFName;
     }
 }
